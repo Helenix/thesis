@@ -1,0 +1,205 @@
+#include "../headers/utilityHelper.h"
+
+// Convex Hull utility functions
+Point P0;
+
+int swap(Point &pA, Point &pB) {
+    Point tmp = pA;
+    pA = pB;
+    pB = tmp;
+}
+
+Point nextToTop(stack<Point> &S) 
+{ 
+    Point p = S.top(); 
+    S.pop(); 
+    Point res = S.top(); 
+    S.push(p); 
+    return res; 
+} 
+
+double distance(Point pA, Point pB) {
+    return pow(pA.x - pB.x, 2) + pow(pA.y - pB.y, 2);
+}
+
+double orientation(Point pA, Point pB, Point pC) {
+    // 0 Colinear
+    // 1 Clock wise ( > 0)
+    // 2 Counter clock wise ( < 0)
+    int val = (pB.y - pA.y) * (pC.x - pA.x) - (pB.x - pA.x) * (pC.y - pA.y);
+    
+    if(val == 0) return 0;
+
+    return (val > 0) ? 1:2;
+}
+
+int compare(const void *vpA, const void *vpB) {
+    Point *pA = (Point *) vpA; 
+    Point *pB = (Point *) vpB;
+    
+    int o = orientation(P0, *pA, *pB);
+
+    if(o == 0) {
+        return (distance(P0, *pB) >= distance(P0, *pA)) ?  -1 : 1;
+    } 
+
+    return (o == 2) ? -1 : 1;
+}
+
+// Graham Scan Algorithm
+vector<Point> findConvexHull(vector<Point> &points) {
+    vector<Point> convexHull {};
+
+    int ymin = points[0].y;
+    int min = 0;
+
+    for(unsigned int i = 0; i < points.size(); i++) {
+        int y = points[i].y;
+        if(y < ymin || (y == ymin && points[i].x < points[min].x)) {
+            ymin = points[i].y;
+        }
+    }
+
+    swap(points[0], points[min]); 
+
+    P0 = points[0];
+
+    // 2nd step:
+    qsort(&points[1], points.size()-1, sizeof(Point), compare);
+
+    int m = 1;
+    for(unsigned int i = 0; i < points.size(); i++) {
+        while (i < points.size()-1 && orientation(P0, points[i], points[i+1]) == 0) 
+            i++; 
+    
+        points[m] = points[i]; 
+        m++; 
+    }
+
+    if(m < 3) return convexHull;
+
+    stack<Point> S;
+    S.push(points[0]);
+    S.push(points[1]);
+    S.push(points[2]);
+
+    for(unsigned int i = 3; i < points.size(); i++) {
+        while (orientation(nextToTop(S), S.top(), points[i]) != 2) 
+            S.pop(); 
+        S.push(points[i]); 
+    }
+
+    while (!S.empty()) { 
+        Point p = S.top(); 
+        convexHull.push_back(p);
+        S.pop(); 
+    }
+    
+    reverse(convexHull.begin(), convexHull.end());
+
+    return convexHull;
+}
+
+bool isInsideConvexHull(vector<Point> &convexHull, Point &point) {
+    // a point is inside a convex hull if it makes a counter clock direction with the convexl hull points
+    int size = convexHull.size();
+    int o;
+    
+    if(size >= 3) {
+        for(unsigned int i = 0; i < size; i++) {
+            if(i != size - 1)
+                o = orientation(point, convexHull[i], convexHull[i + 1]);
+            else 
+                o = orientation(point, convexHull[i], convexHull[0]);
+            if(o == 1)
+                return false;
+        }
+    } else return false;
+    
+    return true;
+}
+
+vector<Point> pointsInsideConvexHull(vector<Point> &convexHull, vector<Point> &points) {
+    // a point is inside a convex hull if it makes a counter clock direction with the convexl hull points
+    int cSize = convexHull.size();
+    int pSize = points.size();
+    int o;
+    bool inside = false;
+    vector<Point> pointsInside {};
+    
+    if(cSize >= 3) {
+        for(unsigned int n = 0; n < pSize; n++) {
+            inside = true;
+
+            for(unsigned int i = 0; i < cSize; i++) {
+                if(i != cSize - 1)
+                    o = orientation(points[n], convexHull[i], convexHull[i + 1]);
+                else 
+                    o = orientation(points[n], convexHull[i], convexHull[0]);
+
+                // if the orientation is either, CC or linear, keep testing it for the other convex hull points, otherwise the point is outside
+                if(o == 1)
+                    inside = false;
+                    break;
+            }
+            if(inside)
+                pointsInside.push_back(points[n]);
+        }
+    }
+    
+    return pointsInside;
+}
+
+vector<Point> readPointsFromFile(const char *name) {
+    FILE *fp = NULL;
+    vector<Point> points {};
+    char buffer[32];
+
+    fp = fopen(name, "r");
+
+    if(fp) {
+        cout << "File opened with success!\n";
+        int x, y, z;
+        while(fgets(buffer, sizeof(buffer), fp)) {
+            sscanf(buffer, "%d %d %d", &x, &y, &z);
+            points.push_back(Point(x, y, z));
+        }
+    }
+    else {
+        cout << "Cannot open the file!\n";
+        exit(-1); 
+    }
+
+    fclose(fp);
+
+    return points; 
+}
+
+void writePointsToFile(const char *name, vector<Point> points) {
+    FILE *fp = NULL;
+    
+    if(points.size() < 3) {
+        printf("The convex hull must have minimum 3 points");
+        exit(-1);
+    }
+
+    fp = fopen(name, "w");
+    if(fp) {
+        cout << "File created with success!\n";
+        for(auto i: points) {
+            fprintf(fp, "%d %d %d\n", i.x, i.y, i.z);
+        }
+    }
+    else {
+        cout << "Cannot create the file!\n";    
+        exit(-1);   
+    }
+
+    fclose(fp);
+}
+
+void printPoints(vector<Point> points) {
+    for(unsigned int i = 0; i < points.size() ; i++) {
+        printf("Point %d: (%d, %d, %d)\n", i + 1, points[i].x, points[i].y, points[i].z);
+    }
+}
