@@ -11,20 +11,26 @@
 #include <stack>
 #include <algorithm>
 
-#define PT 20                   // UAV Transmitted Power (dBm)  
+#define TX_POWER 23             // UAV Transmitted Power (dBm)  
+#define MIN_RX_SENSITIVITY -82  // Ground Nodes Min Sensitivity (dBm)
+#define D0 1                    // 1m D0 ref on log path loss model
+#define PATH_LOSS_EXPOENT 2.2   // path loss expoent on log path loss model
+#define LAMBDA 0.12437810945    // wavelength of uav signal
 #define RB 6                    // Data rate (MBit/s)
-#define PRS -82                 // Ground Nodes Min Sensitivity (dBm)
-#define H_UAV 45                // UAV Flying Altitute (m)
-#define AREA 1000*1000          // Area xMax * yMax (m^2)
+#define AREA 5000*5000          // Area xMax * yMax (m^2)
 #define N_GNS 120               // Number of Ground Nodes  
+
 #define C  300000000            // Speed of Light (m/s)
 #define F 2412000000            // UAV Carrier Frequency (Hz)
+
 #define ALFA 0.5                // Alfa
 #define D 1760.93               // Maximum UAV-GN Distance (m)
-#define NSGA_POPSIZE 200        // NSGA-II Population Size
-#define NSGA_PC 0.7             // NSGA-II Pc
-#define NSGA_PM 0.4             // NSGA-II Pm
+#define NSGA_POPSIZE 80      // NSGA-II Population Size
+#define NSGA_PC 0.9             // NSGA-II Pc
+#define NSGA_PM 0.6             // NSGA-II Pm
 #define NSGIA_ITERATION 50      // NSGA-II Number of Iterations
+
+
 
 using namespace std;
 
@@ -77,9 +83,7 @@ struct FlyingNode: Node {
 };
 
 struct FlyingNodeAlelle {
-    /* Contains information of flying nodes to be used in the Genetic Algorithm */
-    /* dont need to have isConnected + connectedTo */
-
+    /* Contains the information of flying nodes to be used in the Genetic Algorithm */
     const int id;
     int height;
 	bool flying;
@@ -126,6 +130,11 @@ vector<Point> pointsInsideConvexHull(vector<Point> &convexHull, vector<Point> &p
 
 vector<Point> readPointsFromFile(const char *name);
 void writePointsToFile(const char *name, vector<Point> points);
-void printPoints(vector<Point> point);
+void printPoints(vector<Point> &points);
+bool findPoint(vector<Point> &points, Point &point);
+
+double getMaxRange(double rxSensitivity, double lambda, double pathLossExpoent);
+double dbmTodB(double dbm);
+double getLambda(double frequency);
 
 #endif

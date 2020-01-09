@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-with open("input_files/groundNodes120.txt") as file:
+with open("../input_files/groundNodes120.txt") as file:
     for line in file:
         positions = line.split()
         x, y = int(positions[0]), int(positions[1])
@@ -10,7 +10,7 @@ with open("input_files/groundNodes120.txt") as file:
 
 
 hull = []
-with open("input_files/convexHull.txt") as file:
+with open("../input_files/convexHull.txt") as file:
     for line in file:
         positions = line.split()
         point = int(positions[0]), int(positions[1])

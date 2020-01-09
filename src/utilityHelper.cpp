@@ -177,13 +177,15 @@ vector<Point> readPointsFromFile(const char *name) {
 
 void writePointsToFile(const char *name, vector<Point> points) {
     FILE *fp = NULL;
-    
-    if(points.size() < 3) {
-        printf("The convex hull must have minimum 3 points");
+
+    char path[64];
+    int n = sprintf(path, "../input_files/%s", name);
+    if(n < 0) {
+        printf("Error generating the ground node file\n");
         exit(-1);
     }
 
-    fp = fopen(name, "w");
+    fp = fopen(path, "w");
     if(fp) {
         cout << "File created with success!\n";
         for(auto i: points) {
@@ -198,8 +200,32 @@ void writePointsToFile(const char *name, vector<Point> points) {
     fclose(fp);
 }
 
-void printPoints(vector<Point> points) {
+void printPoints(vector<Point> &points) {
     for(unsigned int i = 0; i < points.size() ; i++) {
         printf("Point %d: (%d, %d, %d)\n", i + 1, points[i].x, points[i].y, points[i].z);
     }
 }
+
+bool findPoint(vector<Point> &points, Point &point) {
+    for(auto i: points) {
+        if(point.x == i.x && point.y == i.y && point.z == i.z) {
+            return true;
+        }
+    } 
+    return false;
+}
+
+double getMaxRange(double rxSensitivity, double lambda, double pathLossExpoent) {
+    return D0*pow(10, ((dbmTodB(TX_POWER) - dbmTodB(rxSensitivity) - 20 * log10(4 * M_PI * D0 / lambda)) / (10 * pathLossExpoent)));
+};
+
+double dbmTodB(double dbm) {
+    return dbm - 30;
+};
+
+double getLambda(double frequency) {
+    return (long) C / frequency;
+};
+
+
+
