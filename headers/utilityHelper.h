@@ -127,6 +127,7 @@ int compare(const void *vpA, const void *vpB);
 vector<Point> findConvexHull(vector<Point> &points);
 bool isInsideConvexHull(vector<Point> &convexHull, Point &point);
 vector<Point> pointsInsideConvexHull(vector<Point> &convexHull, vector<Point> &points);
+void gridInsideConvexHull(int xMax, int yMax, int offset, const char *gridFile);
 
 vector<Point> readPointsFromFile(const char *name);
 void writePointsToFile(const char *name, vector<Point> points);

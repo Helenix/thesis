@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-with open("../input_files/groundNodes120.txt") as file:
+with open("../input_files/groundNodes25.txt") as file:
     for line in file:
         positions = line.split()
         x, y = int(positions[0]), int(positions[1])
@@ -31,11 +31,6 @@ while i < size:
 
     i = i + 1
 
-
-
-
-
-      
     
 plt.grid(True)
 plt.show()

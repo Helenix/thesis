@@ -26,7 +26,7 @@ double orientation(Point pA, Point pB, Point pC) {
     // 0 Colinear
     // 1 Clock wise ( > 0)
     // 2 Counter clock wise ( < 0)
-    int val = (pB.y - pA.y) * (pC.x - pA.x) - (pB.x - pA.x) * (pC.y - pA.y);
+     int val = (pB.y - pA.y) * (pC.x - pA.x) - (pB.x - pA.x) * (pC.y - pA.y);
     
     if(val == 0) return 0;
 
@@ -129,25 +129,53 @@ vector<Point> pointsInsideConvexHull(vector<Point> &convexHull, vector<Point> &p
     
     if(cSize >= 3) {
         for(unsigned int n = 0; n < pSize; n++) {
-            inside = true;
+            inside = true; 
 
             for(unsigned int i = 0; i < cSize; i++) {
                 if(i != cSize - 1)
                     o = orientation(points[n], convexHull[i], convexHull[i + 1]);
                 else 
                     o = orientation(points[n], convexHull[i], convexHull[0]);
+                
 
                 // if the orientation is either, CC or linear, keep testing it for the other convex hull points, otherwise the point is outside
-                if(o == 1)
+                if(o == 1) {
                     inside = false;
                     break;
+                }
             }
-            if(inside)
+            if(inside) {
                 pointsInside.push_back(points[n]);
+            }
         }
     }
     
     return pointsInside;
+}
+
+void gridInsideConvexHull(int xMax, int yMax, int offset, const char *gridFile) {
+    int xPoints = xMax/offset + 1;
+    int yPoints = yMax/offset + 1;
+    vector<Point> gridList {};
+    vector<Point> convexHull {};
+    vector<Point> gridInsideConvex {};
+
+    for(int x = 0; x < xPoints; x++) {
+        for(int y = 0; y < yPoints; y++) {
+            gridList.push_back(Point(x * offset, y * offset, 0));
+        }
+    }
+
+    convexHull = readPointsFromFile("../input_files/convexHull.txt");
+    gridInsideConvex = pointsInsideConvexHull(convexHull, gridList);
+
+    for(auto i: convexHull) {
+        if(!findPoint(gridInsideConvex, i)) {
+            gridInsideConvex.push_back(i);
+        }
+    }
+
+    writePointsToFile(gridFile, gridInsideConvex);
 }
 
 vector<Point> readPointsFromFile(const char *name) {
@@ -181,19 +209,19 @@ void writePointsToFile(const char *name, vector<Point> points) {
     char path[64];
     int n = sprintf(path, "../input_files/%s", name);
     if(n < 0) {
-        printf("Error generating the ground node file\n");
+        printf("Error generating the file\n");
         exit(-1);
     }
 
     fp = fopen(path, "w");
     if(fp) {
-        cout << "File created with success!\n";
+        printf("File created with success!\n");
         for(auto i: points) {
             fprintf(fp, "%d %d %d\n", i.x, i.y, i.z);
         }
     }
     else {
-        cout << "Cannot create the file!\n";    
+        printf("Cannot create the file!\n");
         exit(-1);   
     }
 
@@ -204,6 +232,7 @@ void printPoints(vector<Point> &points) {
     for(unsigned int i = 0; i < points.size() ; i++) {
         printf("Point %d: (%d, %d, %d)\n", i + 1, points[i].x, points[i].y, points[i].z);
     }
+    printf("\n");
 }
 
 bool findPoint(vector<Point> &points, Point &point) {

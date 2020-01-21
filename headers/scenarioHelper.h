@@ -18,15 +18,24 @@ class scenarioHelper {
         void setOffset(int offset);
         int getOffset();
 
-        void deployGroundNodesFile();
+        void generateGroundNodesFile();
+        void generateGroundNodesDemandFile(const char *name);
+        void deployGroundNodes();
+        void setGroundNodesDemand(const char *name);
+        
+        GroundNode *getGroundNodeByID(int id);
 
-        vector<Point> groundNodesList {};
+        vector<Point> groundPointsList {};
+        vector<GroundNode *> groundNodesList {};
+        vector<FlyingNode *> flyingNodesList {};
 
     protected:
         int areaWidth;
         int areaHeight;
         int offset;
         int numOfNodes;
+        static int nodeIdCounter;
+        
 };
 
 #endif
