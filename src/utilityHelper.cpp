@@ -153,7 +153,7 @@ vector<Point> pointsInsideConvexHull(vector<Point> &convexHull, vector<Point> &p
     return pointsInside;
 }
 
-void gridInsideConvexHull(int xMax, int yMax, int offset, const char *gridFile) {
+void gridInsideConvexHull(int xMax, int yMax, int offset, const char *convexHullFile) {
     int xPoints = xMax/offset + 1;
     int yPoints = yMax/offset + 1;
     vector<Point> gridList {};
@@ -166,7 +166,7 @@ void gridInsideConvexHull(int xMax, int yMax, int offset, const char *gridFile) 
         }
     }
 
-    convexHull = readPointsFromFile("../input_files/convexHull.txt");
+    convexHull = readPointsFromFile(convexHullFile);
     gridInsideConvex = pointsInsideConvexHull(convexHull, gridList);
 
     for(auto i: convexHull) {
@@ -175,7 +175,7 @@ void gridInsideConvexHull(int xMax, int yMax, int offset, const char *gridFile) 
         }
     }
 
-    writePointsToFile(gridFile, gridInsideConvex);
+    writePointsToFile("../input_files/gridFile.txt", gridInsideConvex);
 }
 
 vector<Point> readPointsFromFile(const char *name) {
@@ -256,5 +256,27 @@ double getLambda(double frequency) {
     return (long) C / frequency;
 };
 
+double dist3D(Point &PA, Point &PB) {
+    return sqrt(pow(PA.x - PB.x, 2) + pow(PA.y - PB.y, 2) + pow(PA.z - PB.z, 2));
+}
 
+bool equalPoints(Point &PA, Point &PB) {
+    if(PA.x == PB.x && PA.y == PB.y)
+        return true;
+    return false;
+}
 
+map<int, double> maxFreeDistanceTableIEEE80211g(double pathLossExpoent) {
+    map<int,double> tableMaxDist;
+
+	tableMaxDist.insert(std::make_pair(6, getMaxRange(-82, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(9, getMaxRange(-81, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(12, getMaxRange(-79, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(18, getMaxRange(-77, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(24, getMaxRange(-74, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(36, getMaxRange(-70, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(48, getMaxRange(-66, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(54, getMaxRange(-65, pathLossExpoent, getLambda(F))));
+
+    return tableMaxDist;
+}

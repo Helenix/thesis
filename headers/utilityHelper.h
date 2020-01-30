@@ -18,17 +18,19 @@
 #define LAMBDA 0.12437810945    // wavelength of uav signal
 #define RB 6                    // Data rate (MBit/s)
 #define AREA 5000*5000          // Area xMax * yMax (m^2)
-#define N_GNS 120               // Number of Ground Nodes  
+#define N_GNS 100               // Number of Ground Nodes  
 
 #define C  300000000            // Speed of Light (m/s)
 #define F 2412000000            // UAV Carrier Frequency (Hz)
 
-#define ALFA 0.5                // Alfa
+#define ALFA 0.3                // Alfa
 #define D 1760.93               // Maximum UAV-GN Distance (m)
 #define NSGA_POPSIZE 80      // NSGA-II Population Size
 #define NSGA_PC 0.9             // NSGA-II Pc
 #define NSGA_PM 0.6             // NSGA-II Pm
-#define NSGIA_ITERATION 50      // NSGA-II Number of Iterations
+#define NSGIA_GENERATIONS 65      // NSGA-II Number of Iterations
+#define NSGA_OBJFUNCT 2
+#define INFINITE_DISTANCE 1000000
 
 
 
@@ -115,7 +117,7 @@ struct Individual {
     Individual(): rank(0), np(0), uavNumber(0), crowdingDistance(0.0), maxDissatisfaction(0.0), genes(), s {} {}
     Individual(int uavNumber, double maxDissatisfaction): rank(0), np(0), uavNumber(uavNumber), 
             crowdingDistance(0.0), maxDissatisfaction(maxDissatisfaction), genes(), s {} {}
-    Individual(Individual &i): rank(i.rank), np(i.np), uavNumber(i.uavNumber), 
+    Individual(const Individual &i): rank(i.rank), np(i.np), uavNumber(i.uavNumber), 
             crowdingDistance(i.crowdingDistance), maxDissatisfaction(i.maxDissatisfaction), genes(i.genes), s(i.s) {}
 };
 
@@ -127,7 +129,7 @@ int compare(const void *vpA, const void *vpB);
 vector<Point> findConvexHull(vector<Point> &points);
 bool isInsideConvexHull(vector<Point> &convexHull, Point &point);
 vector<Point> pointsInsideConvexHull(vector<Point> &convexHull, vector<Point> &points);
-void gridInsideConvexHull(int xMax, int yMax, int offset, const char *gridFile);
+void gridInsideConvexHull(int xMax, int yMax, int offset, const char *convexHullFile);
 
 vector<Point> readPointsFromFile(const char *name);
 void writePointsToFile(const char *name, vector<Point> points);
@@ -137,5 +139,9 @@ bool findPoint(vector<Point> &points, Point &point);
 double getMaxRange(double rxSensitivity, double lambda, double pathLossExpoent);
 double dbmTodB(double dbm);
 double getLambda(double frequency);
+double dist3D(Point &PA, Point &PB);
+bool equalPoints(Point &PA, Point &PB);
+
+map<int, double> maxFreeDistanceTableIEEE80211g(double pathLossExpoent);
 
 #endif
