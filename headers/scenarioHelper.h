@@ -30,11 +30,20 @@ class ScenarioHelper {
         
         GroundNode *getGroundNodeByID(int id);
         FlyingNode *getUavNodeById(int id);
+        FlyingNode *getAvailableUav();
         int findGroundNodeWithNoParent();
         bool allGNodesConnected();
         void deployUAV();
+        void deployUAVrandomly();
         Point *closestUavPos(Point &p);
         int getBestSignal(GroundNode *gn);
+        void removeUnusedUavs();
+        Point *pointerToPoint(Point &p);
+        Point resetPoint();
+        void updateAdjacencyMatrix();
+        void printAdjacencyMatrix();       
+        bool isNodeReachable(int start, int end);
+        void setUavPath(int destination);
 
         vector<Point> groundPointsList {};
         vector<Point> convexHull {};
@@ -42,6 +51,9 @@ class ScenarioHelper {
         vector<GroundNode *> groundNodesList {};
         vector<FlyingNode *> flyingNodesList {};
         map<int, double> maxFreeDistTableIEEE80211g;
+        map<int, vector<int>> adjacencyMatrix;
+
+
 
     protected:
         int areaWidth;

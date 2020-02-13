@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stack>
 #include <algorithm>
+#include <list>
 
 #define TX_POWER 23             // UAV Transmitted Power (dBm)  
 #define MIN_RX_SENSITIVITY -82  // Ground Nodes Min Sensitivity (dBm)
