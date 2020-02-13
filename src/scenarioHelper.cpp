@@ -207,6 +207,14 @@ FlyingNode *ScenarioHelper::getUavNodeById(int id) {
     return NULL;
 }
 
+FlyingNode *ScenarioHelper::getAvailableUav() {
+    for(int i = 0; i < flyingNodesList.size(); i++) {
+        if(!flyingNodesList[i]->flying) {
+            return flyingNodesList[i];
+        }
+    }
+    return NULL;
+}
 
 int ScenarioHelper::findGroundNodeWithNoParent() {
     int id = -1;
@@ -219,7 +227,6 @@ int ScenarioHelper::findGroundNodeWithNoParent() {
     }
 
     if(!solutionList.empty()) {
-        srand(time(NULL));
         int randomIndex = rand() % solutionList.size();
         id = solutionList[randomIndex];
     }
@@ -254,12 +261,11 @@ void ScenarioHelper::deployUAV() {
             printf("Closest UAV: %d %d %d\n", uavPoint->x, uavPoint->y, uavPoint->z);
 
             if(uavPoint) {
+                // TODO: getAvailableUAV() instead of the for
                 for(auto i: flyingNodesList) {
                     if(!i->flying) {
                         i->flying = true;
                         i->serving = true;
-                        // Might be wrong the bridgind
-                        i->bridging = false;
                         i->height = height;
                         uavPoint->busy = true;
                         uavPoint->z = height;
@@ -297,14 +303,66 @@ void ScenarioHelper::deployUAV() {
             exit(-1);
         }
 
+        if(counter >= 100000) {
+            printf("ScenarioHelper::deployUAV() counter exceeded\n");
+            exit(-1);
+        }
+        counter++;
+    }
+    
+    removeUnusedUavs();
+    updateAdjacencyMatrix();
+    setUavPath(0);
+}
+
+void ScenarioHelper::deployUAVrandomly() {
+    int counter = 0;
+
+    while(!allGNodesConnected()) {
+        int height = randomHeight();
+        int foundUav = false;
+        int index;
+
+        while(!foundUav) {
+            index = rand() % gridInsideConvex.size();
+            if(!gridInsideConvex[index].busy) {
+                foundUav = true;
+            }
+        }
+
+        for(auto i: flyingNodesList) {
+            if(!i->flying) {
+                i->flying = true;
+                i->serving = true;
+                i->height = height;
+                gridInsideConvex[index].busy = true;
+                gridInsideConvex[index].z = height;
+                i->p = gridInsideConvex[index];
+
+                for (auto j: groundNodesList) {
+                    int newUavID = getBestSignal(j);
+                    if(newUavID >= 0) {
+                        FlyingNode *tmpUAV = getUavNodeById(newUavID);
+                        tmpUAV->serving = true;
+                        tmpUAV->bridging = false;
+                        j->connectedTo = newUavID;
+                        j->isConnected = true;
+                    }
+                }
+                break;
+            }
+        }
+
         if(counter >= 10000) {
             printf("ScenarioHelper::deployUAV() counter exceeded\n");
-            break;
+            exit(-1);
         }
         counter++;
     }
 
-    printf("Counter: %d\n", counter);
+    removeUnusedUavs();
+    updateAdjacencyMatrix();
+    setUavPath(0);
 }
 
 Point *ScenarioHelper::closestUavPos(Point &p) {
@@ -339,4 +397,218 @@ int ScenarioHelper::getBestSignal(GroundNode *gn) {
         }
     }
     return bestSignal;
+}
+
+void ScenarioHelper::removeUnusedUavs() {
+    map<int, int> uavConnectionsCounter;
+
+    for(auto i: flyingNodesList) {
+        if(i->flying) {
+            uavConnectionsCounter.insert(make_pair(i->id, 0));
+        }
+    }
+
+    for(auto i: groundNodesList) {
+        uavConnectionsCounter[i->connectedTo] += 1;
+    }
+
+    auto it = uavConnectionsCounter.begin();
+    for(;it != uavConnectionsCounter.end(); it++) {
+        if((*it).second <= 0) {
+            FlyingNode *toRemove = getUavNodeById((*it).first);
+            if(!toRemove->bridging) {
+                toRemove->flying = false;
+                toRemove->serving = false;
+                toRemove->height = 0;
+                toRemove->isConnected = false;
+                toRemove->connectedTo = -1;
+                Point *pointPtr = pointerToPoint(toRemove->p);
+                if(!pointPtr) {
+                    printf("ScenarioHelper::removeUnusedUavs() couldn't release point");
+                    exit(-1);
+                } else {
+                    pointPtr->busy = false;
+                }
+                toRemove->p = resetPoint();
+            }
+        }
+    }
+}
+
+Point *ScenarioHelper::pointerToPoint(Point &p) {
+    Point *pointer = NULL;
+    for(int i = 0; i < gridInsideConvex.size(); i++) {
+        if(equalPoints(p, gridInsideConvex[i])) {
+            pointer = &gridInsideConvex[i];
+            break;
+        }
+    }
+
+    return pointer;
+}
+
+Point ScenarioHelper::resetPoint() {
+    return Point(-1, -1, -1);
+}
+
+void ScenarioHelper::updateAdjacencyMatrix() {
+    /* for(auto i: flyingNodesList) {
+        if(i->flying)
+            printf("uav with height %d: %d %d %d\n", i->id, i->p.x, i->p.y, i->p.z);
+    } */
+
+    adjacencyMatrix = {};
+
+    for(int i = 0; i < flyingNodesList.size(); i++) {
+        if(flyingNodesList[i]->flying) {
+            adjacencyMatrix.insert(make_pair(flyingNodesList[i]->id, vector<int> {}));
+        }
+    }
+
+    double maxRadius = getMaxRange(MIN_RX_SENSITIVITY, getLambda(F), PATH_LOSS_EXPOENT);
+
+    for(int i = 0; i < flyingNodesList.size(); i++) {
+        for(int j = 0; j < flyingNodesList.size(); j++) {
+            if(i != j) {
+                if(flyingNodesList[i]->flying && flyingNodesList[j]->flying) {
+                    double dist = dist3D(flyingNodesList[i]->p, flyingNodesList[j]->p);
+                    if(dist <= maxRadius) {
+                        adjacencyMatrix[flyingNodesList[i]->id].push_back(flyingNodesList[j]->id);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void  ScenarioHelper::printAdjacencyMatrix() {
+    printf("\n\nAdjacencyMatrix: \n\n");
+
+    auto adjIt = adjacencyMatrix.begin();
+
+    for(; adjIt != adjacencyMatrix.end(); adjIt++) {
+        printf("%d: ", (*adjIt).first);
+        for(int i = 0; i < (*adjIt).second.size(); i++) {
+            printf("%d ", (*adjIt).second[i]);
+        }
+        printf("\n");
+    }
+    printf("Adj size = %lu\n\n", adjacencyMatrix.size());
+}
+
+bool ScenarioHelper::isNodeReachable(int start, int destination) {
+    list<int> queue {};
+    map<int, bool> visited;
+
+    if(start == destination) {
+        return true;
+    }
+
+    for(int i = 0; i < flyingNodesList.size(); i++) {
+        visited.insert(make_pair(flyingNodesList[i]->id, false));
+    }
+
+    visited[start] = true;
+    queue.push_back(start);
+
+    vector<int>::iterator it;
+
+    printf("OLA %lu\n", adjacencyMatrix.size());
+
+    while(!queue.empty()) {
+        start = queue.front();
+        queue.pop_front();
+
+        for(it = adjacencyMatrix[start].begin(); it != adjacencyMatrix[start].end(); it++) {
+            if((*it) == destination) {
+                return true;
+            }
+
+            if(!visited[*it]) {
+                visited[*it] = true;
+                queue.push_back(*it);
+            }
+        }
+    }
+    return false;
+}
+
+void ScenarioHelper::setUavPath(int destination) {
+    double maxRadius = getMaxRange(MIN_RX_SENSITIVITY, getLambda(F), PATH_LOSS_EXPOENT);
+
+    int flyingNodeId;
+
+    for(auto i: groundNodesList) {
+        if(i->id == destination) {
+            flyingNodeId = i->connectedTo;
+            break;
+        }
+    }
+
+    FlyingNode *flyingNode = getUavNodeById(flyingNodeId);
+    printf("Master node %d\n", flyingNodeId);
+
+    auto flyingNodeIt = flyingNodesList.begin();
+
+    for(; flyingNodeIt != flyingNodesList.end(); flyingNodeIt++) {
+        if((*flyingNodeIt)->flying && (*flyingNodeIt)->id != flyingNodeId) {
+            Point *currentPoint = pointerToPoint((*flyingNodeIt)->p);
+            while(!isNodeReachable((*flyingNodeIt)->id, flyingNodeId)) {
+                printf("One node is not reachable: id %d (%d %d %d)\n", (*flyingNodeIt)->id, (*flyingNodeIt)->p.x, (*flyingNodeIt)->p.y, (*flyingNodeIt)->p.z);
+                vector<Point> tempIds {};
+
+                for(int i = 0; i < gridInsideConvex.size(); i++) {
+                    if(!gridInsideConvex[i].busy) {
+                        Point possiblePoint(gridInsideConvex[i].x, gridInsideConvex[i].y, randomHeight());
+                        if(dist3D(possiblePoint, *currentPoint) <= maxRadius && !equalPoints(possiblePoint, *currentPoint)) {
+                            tempIds.push_back(possiblePoint);
+                        }
+                    }
+                }
+
+                if(!tempIds.empty()) {
+                    double bestDistance = INFINITE_DISTANCE;
+                    Point bestPoint;
+
+                    for(int i = 0; i < tempIds.size(); i++) {
+                        double currentDistance = dist3D(tempIds[i], flyingNode->p);
+                        if(currentDistance < bestDistance) {
+                            bestDistance = currentDistance;
+                            bestPoint = tempIds[i];
+                        }
+                    }
+                    
+                    currentPoint = pointerToPoint(bestPoint);
+                    currentPoint->z = bestPoint.z;
+                
+
+                } else {
+                    printf("ScenarioHelper::setUavPath: Uav has no neighbour");
+                    exit(-1);
+                }
+
+                if(!currentPoint->busy) {
+                    FlyingNode *availableUav = getAvailableUav();
+
+                    if(availableUav) {
+                        printf("New uav Id: %d, P = (%d, %d, %d)\n", availableUav->id, currentPoint->x, currentPoint->y, currentPoint->z);
+                        availableUav->flying = true;
+                        availableUav->bridging = true;
+                        availableUav->height = (*currentPoint).z;
+                        availableUav->p = *currentPoint;
+                        currentPoint->busy;
+                        updateAdjacencyMatrix();
+                        
+                    } else {
+                        printf("ScenarioHelper::setUavPath: There is no available uav");
+                        exit(-1);
+                    }
+
+                } else {
+                    printf("ScenarioHelper::setUavPath: Error in uav candidate point");
+                    exit(-1);
+                }
+            }
+        }
+    }
 }

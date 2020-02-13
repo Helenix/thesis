@@ -12,7 +12,7 @@ AlgorithmHelper::AlgorithmHelper(int xMax, int yMax, int offset, const char *con
     scenarioHelper->maxFreeDistTableIEEE80211g = maxFreeDistanceTableIEEE80211g(PATH_LOSS_EXPOENT);
     scenarioHelper->initializeNetworkArea(xMax, yMax, offset, convexHullFile, gridFile);
     scenarioHelper->setGroundNodesDemand(demandFile);
-    scenarioHelper->deployUAV();
+    scenarioHelper->deployUAVrandomly();
 }
 
 void AlgorithmHelper::setPopSize(int popSize) {

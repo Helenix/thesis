@@ -2,12 +2,6 @@
 #include "../headers/scenarioHelper.h"
 #include "../headers/algorithmHelper.h"
 
-enum mode {
-    SERVING,
-    FLYING,
-    BRIDGING
-};
-
 int main(int argc, char *argv[]) {
     int x = 5000;
     int y = 5000;
@@ -27,13 +21,13 @@ int main(int argc, char *argv[]) {
     vector<Point> convexHull {};    
     ScenarioHelper scenario("../input_files/groundNodes100.txt");
 
-    scenario.setAreaHeight(5000);
-    scenario.setAreaWidth(5000);
+    // scenario.setAreaHeight(5000);
+    // scenario.setAreaWidth(5000);
     scenario.setNumOfNodes(100);
-    scenario.generateGroundNodesFile(); 
-    scenario.deployGroundNodes();
-    scenario.generateGroundNodesDemandFile("../input_files/nodeDemand.txt");
-    scenario.setGroundNodesDemand("../input_files/nodeDemand.txt");
+    // scenario.generateGroundNodesFile(); 
+    // scenario.deployGroundNodes();
+    // scenario.generateGroundNodesDemandFile("../input_files/nodeDemand.txt");
+    // scenario.setGroundNodesDemand("../input_files/nodeDemand.txt");
 
     int n = sprintf(path, "../input_files/groundNodes%d.txt", scenario.getNumOfNodes());
     if(n < 0) {
