@@ -269,14 +269,14 @@ bool equalPoints(Point &PA, Point &PB) {
 map<int, double> maxFreeDistanceTableIEEE80211g(double pathLossExpoent) {
     map<int,double> tableMaxDist;
 
-	tableMaxDist.insert(std::make_pair(6, getMaxRange(-82, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(9, getMaxRange(-81, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(12, getMaxRange(-79, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(18, getMaxRange(-77, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(24, getMaxRange(-74, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(36, getMaxRange(-70, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(48, getMaxRange(-66, pathLossExpoent, getLambda(F))));
-	tableMaxDist.insert(std::make_pair(54, getMaxRange(-65, pathLossExpoent, getLambda(F))));
+	tableMaxDist.insert(std::make_pair(6,  getMaxRange((double) -82, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(9,  getMaxRange((double) -81, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(12, getMaxRange((double) -79, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(18, getMaxRange((double) -77, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(24, getMaxRange((double) -74, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(36, getMaxRange((double) -70, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(48, getMaxRange((double) -66, getLambda(F), pathLossExpoent)));
+	tableMaxDist.insert(std::make_pair(54, getMaxRange((double) -65, getLambda(F), pathLossExpoent)));
 
     return tableMaxDist;
 }

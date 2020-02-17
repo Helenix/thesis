@@ -6,6 +6,24 @@ ScenarioHelper::ScenarioHelper(const char *fileName): areaWidth(0), areaHeight(0
     groundPointsList = readPointsFromFile(fileName);
 }
 
+ScenarioHelper::~ScenarioHelper() {
+
+
+
+    auto flyIt = flyingNodesList.begin();
+    for(; flyIt != flyingNodesList.end(); flyIt++) {
+        delete *flyIt;
+    }
+
+    auto gnodeIt = groundNodesList.begin();
+    for(; gnodeIt != groundNodesList.end(); gnodeIt++) {
+        delete *gnodeIt;
+    }
+
+    flyingNodesList.clear();
+    groundNodesList.clear();
+}
+
 int ScenarioHelper::nodeIdCounter = -1;
 
 void ScenarioHelper::setNumOfNodes(int numOfNodes) {
@@ -258,7 +276,7 @@ void ScenarioHelper::deployUAV() {
 
         if(gn) {
             Point *uavPoint = closestUavPos(gn->p);
-            printf("Closest UAV: %d %d %d\n", uavPoint->x, uavPoint->y, uavPoint->z);
+            // printf("Closest UAV: %d %d %d\n", uavPoint->x, uavPoint->y, uavPoint->z);
 
             if(uavPoint) {
                 // TODO: getAvailableUAV() instead of the for
@@ -294,7 +312,6 @@ void ScenarioHelper::deployUAV() {
                 }
                 FlyingNode *tmpUAV = getUavNodeById(uavID);
                 tmpUAV->serving = true;
-                tmpUAV->bridging = false;
                 gn->connectedTo = uavID;
                 gn->isConnected = true;
             }
@@ -513,7 +530,6 @@ bool ScenarioHelper::isNodeReachable(int start, int destination) {
 
     vector<int>::iterator it;
 
-    printf("OLA %lu\n", adjacencyMatrix.size());
 
     while(!queue.empty()) {
         start = queue.front();
@@ -546,7 +562,7 @@ void ScenarioHelper::setUavPath(int destination) {
     }
 
     FlyingNode *flyingNode = getUavNodeById(flyingNodeId);
-    printf("Master node %d\n", flyingNodeId);
+    // printf("Master node %d\n", flyingNodeId);
 
     auto flyingNodeIt = flyingNodesList.begin();
 
@@ -554,7 +570,7 @@ void ScenarioHelper::setUavPath(int destination) {
         if((*flyingNodeIt)->flying && (*flyingNodeIt)->id != flyingNodeId) {
             Point *currentPoint = pointerToPoint((*flyingNodeIt)->p);
             while(!isNodeReachable((*flyingNodeIt)->id, flyingNodeId)) {
-                printf("One node is not reachable: id %d (%d %d %d)\n", (*flyingNodeIt)->id, (*flyingNodeIt)->p.x, (*flyingNodeIt)->p.y, (*flyingNodeIt)->p.z);
+                // printf("One node is not reachable: id %d (%d %d %d)\n", (*flyingNodeIt)->id, (*flyingNodeIt)->p.x, (*flyingNodeIt)->p.y, (*flyingNodeIt)->p.z);
                 vector<Point> tempIds {};
 
                 for(int i = 0; i < gridInsideConvex.size(); i++) {
@@ -591,7 +607,7 @@ void ScenarioHelper::setUavPath(int destination) {
                     FlyingNode *availableUav = getAvailableUav();
 
                     if(availableUav) {
-                        printf("New uav Id: %d, P = (%d, %d, %d)\n", availableUav->id, currentPoint->x, currentPoint->y, currentPoint->z);
+                        // printf("New uav Id: %d, P = (%d, %d, %d)\n", availableUav->id, currentPoint->x, currentPoint->y, currentPoint->z);
                         availableUav->flying = true;
                         availableUav->bridging = true;
                         availableUav->height = (*currentPoint).z;
@@ -610,5 +626,38 @@ void ScenarioHelper::setUavPath(int destination) {
                 }
             }
         }
+    }
+}
+
+void ScenarioHelper::resetNetwork() {
+    resetUavs();
+    resetGrid();
+    resetGroundNodes();
+}
+
+void ScenarioHelper::resetUavs() {
+    for(int i = 0; i < flyingNodesList.size(); i++) {
+        flyingNodesList[i]->bridging = false;
+        flyingNodesList[i]->flying = false;
+        flyingNodesList[i]->serving = false;
+        flyingNodesList[i]->connectedTo = -1;
+        flyingNodesList[i]->height = 0;
+        flyingNodesList[i]->p = resetPoint();
+        flyingNodesList[i]->connectedTo = -1;
+        flyingNodesList[i]->isConnected = false;
+    }
+}
+
+void ScenarioHelper::resetGrid() {
+    for(int i = 0; i < gridInsideConvex.size(); i++) {
+        gridInsideConvex[i].busy = false;
+        gridInsideConvex[i].z = 0;
+    }
+}
+
+void ScenarioHelper::resetGroundNodes() {
+    for(int i = 0; i < groundNodesList.size(); i++) {
+        groundNodesList[i]->connectedTo = -1;
+        groundNodesList[i]->isConnected = false;
     }
 }

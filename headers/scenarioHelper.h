@@ -9,7 +9,7 @@ class ScenarioHelper {
     public:
         ScenarioHelper();
         ScenarioHelper(const char *fileName);
-        // ~ScenarioHelper();
+        ~ScenarioHelper();
 
         void setNumOfNodes(int numOfNodes);
         int getNumOfNodes();
@@ -44,6 +44,10 @@ class ScenarioHelper {
         void printAdjacencyMatrix();       
         bool isNodeReachable(int start, int end);
         void setUavPath(int destination);
+        void resetNetwork();
+        void resetUavs();
+        void resetGrid();
+        void resetGroundNodes();
 
         vector<Point> groundPointsList {};
         vector<Point> convexHull {};

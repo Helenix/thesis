@@ -8,6 +8,7 @@ using namespace std;
 class AlgorithmHelper {
     public:
         AlgorithmHelper(int xMax, int yMax, int offset, const char *convexHullFile, const char *gridFile, const char *gpointsFile, const char *demandFile);
+        ~AlgorithmHelper();
 
         void setPopSize(int popSize);
         void setPc(double pc);
@@ -22,6 +23,7 @@ class AlgorithmHelper {
         ScenarioHelper *getScenariohelperPointer();
         void initializelPopulation();
         Individual getIndividual(int pop, ScenarioHelper *scPointer);
+        double calculateMaxDissatisfaction(Individual individual, ScenarioHelper *scPointer);
 
         vector<Individual> population;
         vector<Individual> Rpopulation;

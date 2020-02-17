@@ -85,9 +85,9 @@ struct FlyingNode: Node {
         FlyingNode(int id, int x, int y, int z): Node(id, x, y, z), height(z), flying(false), serving(false), bridging(false) {}
 };
 
-struct FlyingNodeAlelle {
+struct FlyingNodeAllele {
     /* Contains the information of flying nodes to be used in the Genetic Algorithm */
-    const int id;
+    int id;
     int height;
 	bool flying;
 	bool serving;
@@ -95,13 +95,13 @@ struct FlyingNodeAlelle {
     Point p;
     vector<int> children;
 
-    FlyingNodeAlelle(): p(), id(-1), height(0), flying(false), serving(false), bridging(false), children {} {}
-    FlyingNodeAlelle(const FlyingNodeAlelle &fly): id(fly.id), height(fly.height), p(fly.p), flying(fly.flying), 
+    FlyingNodeAllele(): p(), id(-1), height(0), flying(false), serving(false), bridging(false), children {} {}
+    FlyingNodeAllele(const FlyingNodeAllele &fly): id(fly.id), height(fly.height), p(fly.p), flying(fly.flying), 
             serving(fly.serving), bridging(fly.bridging), children(fly.children) {}
 };
 
 struct Chromosome {
-    vector<FlyingNodeAlelle> chromosomes;
+    vector<FlyingNodeAllele> chromosomes;
 
     Chromosome(): chromosomes {} {}
     Chromosome(const Chromosome &chromosomes): chromosomes(chromosomes.chromosomes) {}  
