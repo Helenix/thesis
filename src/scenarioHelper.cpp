@@ -64,8 +64,6 @@ void ScenarioHelper::generateGroundNodesFile() {
     int numOfNodes = getNumOfNodes();
     int offset = getOffset();
 
-    //srand(time(NULL));
-
     int n = sprintf(fileName, "groundNodes%d.txt", numOfNodes);
     if(n < 0) {
         printf("generateGroundNodesFile: Error generating the ground node file\n");
@@ -114,8 +112,6 @@ void ScenarioHelper::supplyUavNodes()  {
 void ScenarioHelper::generateGroundNodesDemandFile(const char *name) {
     FILE *fp;
     vector<int> demandList {};
-
-    // srand(time(NULL));
 
     demandList.push_back(6);
     demandList.push_back(9);
@@ -404,7 +400,7 @@ int ScenarioHelper::getBestSignal(GroundNode *gn) {
     double bestRange = INFINITE_DISTANCE;
 
     for(auto i: flyingNodesList) {
-        if(i->flying) {
+        if(i->flying && !i->bridging) {
             double range = dist3D(gn->p, i->p);
 
             if(range <= bestRange && range <= getMaxRange(MIN_RX_SENSITIVITY, getLambda(F), PATH_LOSS_EXPOENT)) {
@@ -570,6 +566,7 @@ void ScenarioHelper::setUavPath(int destination) {
         if((*flyingNodeIt)->flying && (*flyingNodeIt)->id != flyingNodeId) {
             Point *currentPoint = pointerToPoint((*flyingNodeIt)->p);
             while(!isNodeReachable((*flyingNodeIt)->id, flyingNodeId)) {
+                // printf("Current point %d %d %d\n", currentPoint->x, currentPoint->y, currentPoint->z);
                 // printf("One node is not reachable: id %d (%d %d %d)\n", (*flyingNodeIt)->id, (*flyingNodeIt)->p.x, (*flyingNodeIt)->p.y, (*flyingNodeIt)->p.z);
                 vector<Point> tempIds {};
 
@@ -593,7 +590,7 @@ void ScenarioHelper::setUavPath(int destination) {
                             bestPoint = tempIds[i];
                         }
                     }
-                    
+
                     currentPoint = pointerToPoint(bestPoint);
                     currentPoint->z = bestPoint.z;
                 
@@ -607,13 +604,15 @@ void ScenarioHelper::setUavPath(int destination) {
                     FlyingNode *availableUav = getAvailableUav();
 
                     if(availableUav) {
-                        // printf("New uav Id: %d, P = (%d, %d, %d)\n", availableUav->id, currentPoint->x, currentPoint->y, currentPoint->z);
-                        availableUav->flying = true;
+                        //printf("Current distance: %f\n", dist3D(flyingNode->p, *currentPoint));
+                        // printf("New uav Id %d for uav: %d, P = (%d, %d, %d)\n", availableUav->id, (*flyingNodeIt)->id, currentPoint->x, currentPoint->y, currentPoint->z);
+                        availableUav->flying = true; 
                         availableUav->bridging = true;
                         availableUav->height = (*currentPoint).z;
                         availableUav->p = *currentPoint;
                         currentPoint->busy;
                         updateAdjacencyMatrix();
+                        //printAdjacencyMatrix();
                         
                     } else {
                         printf("ScenarioHelper::setUavPath: There is no available uav");
@@ -633,6 +632,7 @@ void ScenarioHelper::resetNetwork() {
     resetUavs();
     resetGrid();
     resetGroundNodes();
+    resetAdjacencyMatrix();
 }
 
 void ScenarioHelper::resetUavs() {
@@ -660,4 +660,8 @@ void ScenarioHelper::resetGroundNodes() {
         groundNodesList[i]->connectedTo = -1;
         groundNodesList[i]->isConnected = false;
     }
+}
+
+void ScenarioHelper::resetAdjacencyMatrix() {
+     adjacencyMatrix = {};
 }

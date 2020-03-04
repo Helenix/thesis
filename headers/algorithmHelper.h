@@ -24,15 +24,28 @@ class AlgorithmHelper {
         void initializelPopulation();
         Individual getIndividual(int pop, ScenarioHelper *scPointer);
         double calculateMaxDissatisfaction(Individual individual, ScenarioHelper *scPointer);
+        void runNSGAII(float alpha);
+        void resetFronts();
+        void generateOffspring();
+        void mutation(Individual &individual, ScenarioHelper *scPointer);
+        Individual crossover(Individual &individualA, Individual &individualB, ScenarioHelper *scPointer);
+        vector<FlyingNodeAllele> getSeparationZone(Individual &individualA, Individual &individualB, ScenarioHelper *scPointer);
+        Point getNextPointLine(Point &pivot, int xMin, int xMax, int maxRange, bool rightSide, double theta);
+        void repairDuplicateGnodes(vector<FlyingNodeAllele> &tmpA, vector<FlyingNodeAllele> &tmpB, ScenarioHelper *scPointer);
+        void connectGnodes(vector<FlyingNodeAllele> &tmpUavs, ScenarioHelper *scPointer);
 
-        vector<Individual> population;
-        vector<Individual> Rpopulation;
-        vector<Individual> matingPool;
+        vector<Individual> population {};
+        vector<Individual> rPopulation {};
+        vector<Individual> matingPool {};
+        vector<vector<Individual>> fronts {};
+        vector<double> newMembers {};
+        int generations;
+        float stopCriteria;
+
 
     protected:
         ScenarioHelper *scenarioHelper;
         int popSize, objectiveFunctions;
-        int generations;
         // Probabilty of crossover and mutation
         double pc, pm;
 };

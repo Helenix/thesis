@@ -48,6 +48,7 @@ class ScenarioHelper {
         void resetUavs();
         void resetGrid();
         void resetGroundNodes();
+        void resetAdjacencyMatrix();
 
         vector<Point> groundPointsList {};
         vector<Point> convexHull {};

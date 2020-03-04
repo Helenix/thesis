@@ -280,3 +280,11 @@ map<int, double> maxFreeDistanceTableIEEE80211g(double pathLossExpoent) {
 
     return tableMaxDist;
 }
+
+double randomProbability(){
+    return (double)rand()/RAND_MAX;
+}
+
+bool minComparator(int a, int b) {
+    return (a < b);
+}

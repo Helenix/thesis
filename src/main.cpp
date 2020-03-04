@@ -14,15 +14,15 @@ int main(int argc, char *argv[]) {
     const char *demandFile = "../input_files/nodeDemand.txt";
 
     AlgorithmHelper algHelper(x, y, offset, convexHullfile, gridFile, gpointsFile, demandFile);
-    algHelper.initializelPopulation();
+    algHelper.runNSGAII(NSGA_ALPHA);
     
 
-    printf("\n\n\n DISSATISFACTIONS\n");
+    /* printf("\n\n\n DISSATISFACTIONS\n");
     int counter = 0;
     for(auto i: algHelper.population) {
         printf("Individual %d Max dissatisfaction %f\n", counter, i.maxDissatisfaction);
         counter++;
-    } 
+    } */
 
     /* FILE *fp = NULL;
     char path[64];

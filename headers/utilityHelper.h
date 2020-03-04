@@ -24,8 +24,9 @@
 #define C  300000000            // Speed of Light (m/s)
 #define F 2412000000            // UAV Carrier Frequency (Hz)
 
-#define ALFA 0.3                // Alfa
+
 #define D 1760.93               // Maximum UAV-GN Distance (m)
+#define NSGA_ALPHA 0.3                // Alfa
 #define NSGA_POPSIZE 80      // NSGA-II Population Size
 #define NSGA_PC 0.9             // NSGA-II Pc
 #define NSGA_PM 0.6             // NSGA-II Pm
@@ -51,7 +52,7 @@ struct Point {
     bool busy;
     
     // constructor initialization lists
-    Point(): x(0), y(0), z(0) , busy(false) {} 
+    Point(): x(-1), y(-1), z(-1) , busy(false) {} 
     Point(int x, int y, int z): x(x), y(y), z(z), busy(false) {}
     Point(const Point &p): x(p.x), y(p.y), z(p.z), busy(p.busy) {}
 };
@@ -144,5 +145,8 @@ double dist3D(Point &PA, Point &PB);
 bool equalPoints(Point &PA, Point &PB);
 
 map<int, double> maxFreeDistanceTableIEEE80211g(double pathLossExpoent);
+
+double randomProbability();
+bool minComparator(int a, int b);
 
 #endif
